@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+*.env
+
+# Docker-related files
+*.log
+Dockerfile
+docker-compose.override.yml
+
+# VSCode-specific files
+.vscode/
+
+# Mypy cache files
+.mypy_cache/
+
+# Data and models (exclude from Git)
+backend/app/ml_models/*.csv
+backend/app/ml_models/*.txt
+backend/app/ml_models/*.pkl
+backend/app/ml_models/*.cbm
+
+# Secret environment variables
+.env
+*.env.*
+
+# NGINX logs and temp files
+nginx/logs/
+nginx/temp/
+
+# Common backup files
+*.bak
+*.old
+*.swp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Other logs and output files
+*.log
+*.out
+*.exe
+
+# Powershell scripts (assuming generated tree files)
+*.ps1
