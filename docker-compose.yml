@@ -1,0 +1,116 @@
+# docker-compose.yml
+
+services:
+  database:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      database:
+        condition: service_started
+    env_file:
+      - ./backend/.env.backend
+    volumes:
+      - ./backend/app:/app
+      - ./common:/app/common
+      - ./backend/.env.backend:/app/.env
+    ports:
+      - "5678:5678" # For debugpy
+      - "8000:8000" # Uvicorn/Backend application port
+    entrypoint: [ "python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "main" ]
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8000/health", "||", "exit", "1" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    depends_on:
+      backend:
+        condition: service_started
+    env_file:
+      - ./frontend/.env.frontend
+    ports:
+      - "8501:8501"
+      - "8502:8502"
+    entrypoint: [ "streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.runOnSave=true" ]
+    volumes:
+      - ./frontend/app:/app # Mount frontend app code
+      - ./common:/app/common # Mount shared 'common' folder
+      - ./frontend/.env.frontend:/app/.env # Mount frontend environment variables
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8501" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    image: nginx:latest
+    volumes:
+      - ./nginx:/etc/nginx # Mount the entire nginx directory
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_started
+    restart: on-failure
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    env_file:
+      - ./.env
+    ports:
+      - "8087:5672"
+      - "8086:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics check_port_connectivity || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile.worker
+    env_file:
+      - ./worker/.env.worker
+    volumes:
+      - ./worker:/worker
+      - ./common:/worker/common
+      - ./worker/.env.worker:/.env
+    depends_on:
+      backend:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    entrypoint: [ "python", "-m", "debugpy", "--listen", "0.0.0.0:5680", "worker.py" ]
+    restart: on-failure
+    deploy:
+      replicas: 3
+
+volumes:
+  rabbitmq_data:
+  db_data:

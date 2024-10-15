@@ -1,0 +1,78 @@
++ backend
+  + apop_recovered
+  + app
+    + common
+    + ml_models
+      - df_for_catboost.csv
+      - generated_numbers.txt
+      - model_knn.pkl
+      - prices_model.cbm
+      - steam_user_aggregated.csv
+      - user_game_matrix.csv
+    + routes_old
+      - admin.py
+      - transactions.py
+      - user.py
+    - __init__.py
+    - .env
+    - api_old.py
+    - auth.py
+    - crud.py
+    - main.py
+    - test_user_code.py
+    - user_code.py
+    - worker_old.py
+  + tests
+    - test_main.py
+  - .env.backend
+  - Dockerfile.backend
+  - requirements.txt
++ common
+  + auth
+    - dependencies.py
+    - jwt_handler.py
+  + db
+    - __init__.py
+    - db_api.py
+    - db_config.py
+  + events
+    - event_manager.py
+  + models_old
+    - pm.py
+  + services_old
+    - user_service.py
+  + tasks_old
+    - producer.txt
+  - __init__.py
+  - models.py
+  - schemas.py
++ frontend
+  + app
+    + common
+    + pages
+      - dashboard.py
+    - .env
+    - streamlit_app.py
+  - .env.frontend
+  - Dockerfile.frontend
+  - requirements.txt
++ nginx
+  - Dockerfile
+  - nginx.conf
++ worker
+  + common
+  - .env.worker
+  - Dockerfile.worker
+  - requirements.txt
+  - worker.py
+- .env
+- .gitignore
+- docker-compose.yml
+- generateTree.ps1
+- mypy.ini
+- nginx.conf
+- ngrok.exe
+- public.ps1
+- tree.txt
+- tree2.txt
+
