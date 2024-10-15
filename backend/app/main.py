@@ -1,6 +1,9 @@
 # main.py
+import asyncio
+import json
 import os
 from typing import List
+import uuid
 import aio_pika
 import requests
 import uvicorn
@@ -16,16 +19,14 @@ from common.auth.jwt_handler import (
 )  # JWT функции
 from common.schemas import *
 
-from user_code import AsUserController, BundleRecommender, get_steam_user_info  # type: ignore
 import crud
 from fastapi import Body  # Import Body for request data
 import httpx  # Use httpx for async HTTP requests
-
+from aio_pika import Message, DeliveryMode, ExchangeType
 
 # Импортируем синхронные библиотеки внутри функции, чтобы избежать проблем с асинхронностью
 
 app = FastAPI(root_path="/backend")
-br = BundleRecommender()
 
 
 def new_func():
@@ -35,6 +36,45 @@ def new_func():
 
 
 RABBITMQ_USER, RABBITMQ_PASS = new_func()
+
+RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://rabbitmq:5672/")
+
+
+async def send_task(task_type: str, payload: dict) -> dict:
+    connection = await aio_pika.connect_robust(RABBITMQ_URL)
+    channel = await connection.channel()
+    await channel.set_qos(prefetch_count=1)
+
+    # Declare a unique response queue for this request
+    result_queue = await channel.declare_queue(exclusive=True)
+
+    correlation_id = str(uuid.uuid4())
+
+    message = {"id": correlation_id, "type": task_type, "payload": payload}
+
+    await channel.default_exchange.publish(
+        Message(
+            body=json.dumps(message).encode(),
+            reply_to=result_queue.name,
+            correlation_id=correlation_id,
+            delivery_mode=DeliveryMode.PERSISTENT,
+        ),
+        routing_key="task_queue",
+    )
+
+    # Wait for the response
+    future = asyncio.get_event_loop().create_future()
+
+    async def on_response(message: aio_pika.IncomingMessage):
+        if message.correlation_id == correlation_id:
+            future.set_result(json.loads(message.body))
+            await message.channel.close()
+
+    await result_queue.consume(on_response, no_ack=True)
+
+    response = await future
+    await connection.close()
+    return response
 
 
 @app.on_event("startup")
@@ -114,11 +154,11 @@ async def recommend_bundle(
     session: AsyncSession = Depends(get_db_session),
     steam_id: str = Depends(get_steam_id_from_token),
 ):
-    if not br.models_loaded:
-        br.load_models()
-
+    task_payload = {"steam_id": steam_id}
     try:
-        result = await br.get_bundle_for_user(steam_id, session)
+        result = await send_task("recommend_bundle", task_payload)
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

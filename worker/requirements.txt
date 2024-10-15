@@ -18,8 +18,13 @@ Authlib
 httpx
 Starlette
 requests
-python-openid2 
+python-openid2
 catboost
 joblib
 scikit-learn
+pandas
+numpy
+pydantic
+SQLAlchemy
+
 
