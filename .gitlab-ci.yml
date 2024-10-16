@@ -1,25 +1,30 @@
-image: docker:20.10.16
+default:
+  image: python:3.8
+
+image: docker:latest
 
 services:
-  - docker:20.10.16
+  - docker:dind
 
 variables:
-  DOCKER_HOST: tcp://docker:2375/  # Используем сокет для подключения к Docker
   DOCKER_DRIVER: overlay2
 
 before_script:
-  - docker info  # Проверяем доступность Docker
-  - pip install --upgrade pip
-  - pip install -r requirements.txt  # Установка зависимостей
+  - docker info
 
 stages:
   - test
 
+before_script:
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
 unit_tests:
   stage: test
   script:
-    - pytest ./backend/tests/test_main.py --junitxml=report.xml  # Запускаем тесты
+    - pytest ./backend/tests/test_main.py --junitxml=report.xml
   artifacts:
     paths:
-      - report.xml  # Сохраняем отчет тестов
-
+      - report.xml
+  rules:
+    - when: always
