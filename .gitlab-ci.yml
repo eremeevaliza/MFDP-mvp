@@ -6,7 +6,7 @@ stages:
 
 before_script:
   - pip install --upgrade pip
-  - pip install ./backend/requirements.txt
+  - pip install -r ./backend/requirements.txt
 
 unit_tests:
   stage: test
