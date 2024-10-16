@@ -74,7 +74,7 @@ else:
     }
     query_string = urlencode(params)
     redirect_url = f"{STEAM_OPENID_URL}?{query_string}"
-    st.button(f"[Войти через Steam]({redirect_url})", unsafe_allow_html=True)
+    st.markdown(f"[Войти через Steam]({redirect_url})", unsafe_allow_html=True)
 
 if st.session_state.logged_in:
     st.write("Вы авторизованы через Steam!")

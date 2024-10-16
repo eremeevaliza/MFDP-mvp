@@ -1,5 +1,12 @@
+import os
+import sys
 import pytest
 from fastapi.testclient import TestClient
+
+# Adding the project path to the sys.path to import the FastAPI app
+project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(project_path)
+
 from app.main import app  # Импортируйте ваше приложение FastAPI
 
 # Инициализация клиента для тестирования
