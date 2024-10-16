@@ -1,31 +1,26 @@
-# Используем базовый образ Python для запуска тестов
 image: python:3.8
 
-# Указываем, что сервис Docker будет запущен (если нужно собирать контейнеры)
 services:
   - docker:dind
 
-# Переменные для Docker
 variables:
   DOCKER_DRIVER: overlay2
 
-# Определение стадий
+before_script:
+  - apt-get update && apt-get install -y docker.io  # Устанавливаем Docker
+  - docker info  # Проверяем установку Docker
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
 stages:
   - test
 
-# Установка зависимостей и получение информации о Docker
-before_script:
-  - docker info  # Проверка, что Docker доступен (если требуется Docker)
-  - pip install --upgrade pip  # Обновляем pip
-  - pip install -r requirements.txt  # Устанавливаем зависимости для приложения
-
-# Тестирование
 unit_tests:
   stage: test
   script:
-    - pytest ./backend/tests/test_main.py --junitxml=report.xml  # Запуск тестов
+    - pytest ./backend/tests/test_main.py --junitxml=report.xml
   artifacts:
     paths:
-      - report.xml  # Сохранение артефакта с отчетом о тестах
+      - report.xml
   rules:
     - when: always
