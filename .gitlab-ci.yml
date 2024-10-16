@@ -1,19 +1,19 @@
-image: python:3.8
+image: docker:20.10.16  # Базовый образ Docker
 
 services:
-  - docker:dind
+  - name: docker:dind  # Docker-in-Docker
+    privileged: true  # Включение привилегированного режима для доступа к Docker-демону
 
 variables:
   DOCKER_DRIVER: overlay2
 
-before_script:
-  - apt-get update && apt-get install -y docker.io  # Устанавливаем Docker
-  - docker info  # Проверяем установку Docker
-  - pip install --upgrade pip
-  - pip install -r requirements.txt
-
 stages:
   - test
+
+before_script:
+  - docker info  # Проверяем, что Docker доступен
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
 
 unit_tests:
   stage: test
