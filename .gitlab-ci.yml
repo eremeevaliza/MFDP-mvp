@@ -1,19 +1,9 @@
 default:
   image: python:3.8
 
-image: docker:latest
-
-services:
-  - docker:dind
-
-variables:
-  DOCKER_DRIVER: overlay2
-
-before_script:
-  - docker info
-
 stages:
   - test
+
 
 before_script:
   - pip install --upgrade pip
