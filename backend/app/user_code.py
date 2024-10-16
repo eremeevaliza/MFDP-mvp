@@ -30,7 +30,7 @@ class PasswordUser:
 
 async def get_steam_user_info(steam_id64: str, api_key: str):
     url = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
-    params = {"key": api_key, "steamids": steam_id64}
+    params = {"key": api_key, "steamids": steam_id64, "l": "english"}
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, params=params)

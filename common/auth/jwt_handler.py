@@ -11,7 +11,7 @@ ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def create_access_token(data: any) -> str:
+def create_access_token(data) -> str:
     # payload = {"user": user, "expires": time.time() + 3600}
     data["expires"] = time.time() + 3600
     token = jwt.encode(data, SECRET_KEY, algorithm="HS256")
@@ -38,6 +38,7 @@ def verify_access_token(token: str) -> dict:
         )
 
 
+"""
 async def get_steam_id_from_token(token: str) -> str:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -51,12 +52,12 @@ async def get_steam_id_from_token(token: str) -> str:
             raise credentials_exception
         return steam_id
     except JWTError:
-        raise credentials_exception
+        raise credentials_exception"""
 
 
 async def get_steam_id_from_token(token: str = Depends(oauth2_scheme)) -> str:
     payload = verify_access_token(token)
-    steam_id: str = payload.get("sub")
+    steam_id: str = payload.get("sub", "")
     if steam_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

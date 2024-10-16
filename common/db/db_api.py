@@ -1,42 +1,41 @@
 # common/db/db_api.py
 
 import logging
-from typing import AsyncGenerator, Dict
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-
 from contextlib import asynccontextmanager
 import sys
 import os
 
 from common.models import BaseDbModel
-
-# Добавляем путь к корневой директории проекта
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
-
 from common.db.db_config import get_settings
 
-# Получаем настройки из конфигурации
+# Add the root directory to the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+
+# Get database settings from configuration
 dbSettings = get_settings()
 
-# Создаём асинхронный движок
+# Create an asynchronous engine
 async_engine = create_async_engine(
-    dbSettings.DATABASE_URL_asyncpg,  # Асинхронный URL
+    dbSettings.DATABASE_URL_asyncpg,  # Asynchronous URL
     echo=True,
     pool_size=5,
     max_overflow=10,
 )
 
-# Создаём асинхронный sessionmaker
+# Create an asynchronous sessionmaker
 async_session = async_sessionmaker(
     async_engine, expire_on_commit=False, class_=AsyncSession
 )
 
-# Настройка логирования
+# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+@asynccontextmanager
+async def get_db_session():
     async with async_session() as session:
         try:
             yield session
@@ -47,7 +46,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
             raise
 
 
-# Асинхронная функция инициализации базы данных
+# Asynchronous function to initialize the database
 async def init_db():
     async with async_engine.begin() as conn:
         await conn.run_sync(BaseDbModel.metadata.create_all)

@@ -36,20 +36,21 @@ async def login(request: Request):
 
 
 @router.get("/auth")
-async def auth(request: Request, db: Session = Depends(get_db_session)):
-    token = await oauth.steam.authorize_access_token(request)
-    user_info = await oauth.steam.parse_id_token(request, token)
-    steam_id = user_info.get("sub")
-    if not steam_id:
-        raise HTTPException(status_code=400, detail="Steam authentication failed")
+async def auth(request: Request):
+    async with get_db_session() as session:
+        token = await oauth.steam.authorize_access_token(request)
+        user_info = await oauth.steam.parse_id_token(request, token)
+        steam_id = user_info.get("sub")
+        if not steam_id:
+            raise HTTPException(status_code=400, detail="Steam authentication failed")
 
-    user = crud.get_user_by_steam_id(db, steam_id=steam_id)
-    if not user:
-        # Создайте нового пользователя или обработайте как требуется
-        pass
+        user = crud.get_user_by_steam_id(session, steam_id=steam_id)
+        if not user:
+            # Создайте нового пользователя или обработайте как требуется
+            pass
 
-    # Вернуть токен или установить сессию
-    return {"message": "Authenticated", "user": user.username}
+        # Вернуть токен или установить сессию
+        return {"message": "Authenticated", "user": user.username}
 
 
 """
