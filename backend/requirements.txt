@@ -24,4 +24,5 @@ python-openid2
 catboost
 joblib
 scikit-learn
+pytest
 

@@ -35,7 +35,7 @@ claimed_id = query_params.get("openid.claimed_id", [None])[
 
 # Steam OpenID настройки
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
-PUBLIC_ADDR = "https://6fd5-2600-1700-1690-19a0-68dc-193c-18a4-43a5.ngrok-free.app"
+PUBLIC_ADDR = "https://03af-2600-1700-1690-19a0-41a1-ecfc-4b70-df3b.ngrok-free.app"
 PUBLIC_OAUTH = f"{PUBLIC_ADDR}"
 
 
@@ -46,8 +46,6 @@ def clear_query_params():
 
 if claimed_id and not st.session_state.logged_in:
     if query_params:
-        # Отображаем параметры на фронтенде (для тестов)
-        st.write(query_params)
 
         # Передаем параметры на бэкэнд для валидации
         validate_url = f"{API_URL}/oauth_validate"  # Ссылка на твой FastAPI контейнер
@@ -76,7 +74,7 @@ else:
     }
     query_string = urlencode(params)
     redirect_url = f"{STEAM_OPENID_URL}?{query_string}"
-    st.markdown(f"[Войти через Steam]({redirect_url})", unsafe_allow_html=True)
+    st.button(f"[Войти через Steam]({redirect_url})", unsafe_allow_html=True)
 
 if st.session_state.logged_in:
     st.write("Вы авторизованы через Steam!")
