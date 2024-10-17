@@ -23,8 +23,11 @@ WORKDIR /app
 # Copy and install Python dependencies
 COPY requirements.txt .
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app                
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the backend port
 EXPOSE 8000
+
+# Запуск основного приложения
+ENTRYPOINT [ "python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "main" ]

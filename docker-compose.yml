@@ -24,11 +24,13 @@ services:
       - ./backend/.env.backend
     volumes:
       - ./backend/app:/app
+      - ./backend/tests:/tests
       - ./common:/app/common
       - ./backend/.env.backend:/app/.env
     ports:
       - "5678:5678" # For debugpy
       - "8000:8000" # Uvicorn/Backend application port
+      - "8001:8001" # For tests
     entrypoint: [ "python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "main" ]
     restart: unless-stopped
     healthcheck:

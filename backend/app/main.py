@@ -158,20 +158,6 @@ async def get_prediction(steam_id: dict = Depends(get_steam_id_from_token)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-"""    
-async def recommend_bundle():
-    steam_id: str = await get_steam_id_from_token()
-    task_payload = {"steam_id": steam_id}
-    try:
-        result = await send_task("recommend_bundle", task_payload)
-        if "error" in result:
-            raise HTTPException(status_code=500, detail=result["error"])
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-"""
-
-
 @app.get("/health")
 async def health_check():
     """

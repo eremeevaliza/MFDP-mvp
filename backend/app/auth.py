@@ -51,31 +51,3 @@ async def auth(request: Request):
 
         # Вернуть токен или установить сессию
         return {"message": "Authenticated", "user": user.username}
-
-
-"""
-@router.post("/oauth_validate")
-async def validate_steam_openid(openid_params: dict):
-    print("auth.py: validate_steam_openid()")
-    # Собираем параметры для валидации через Steam
-    payload = {
-        "openid.ns": openid_params.get("openid.ns"),
-        "openid.mode": "check_authentication",
-        "openid.signed": openid_params.get("openid.signed"),
-        "openid.sig": openid_params.get("openid.sig"),
-        "openid.op_endpoint": openid_params.get("openid.op_endpoint"),
-        "openid.claimed_id": openid_params.get("openid.claimed_id"),
-        # Добавляем остальные параметры, как требуется для Steam
-    }
-
-    # Делаем запрос на Steam для проверки подлинности
-    response = requests.post("https://steamcommunity.com/openid/login", data=payload)
-
-    if "is_valid:true" in response.text:
-        steam_id = openid_params.get("openid.claimed_id")
-        # Создаем JWT (пример ниже)
-        token = create_access_token(data={"sub": steam_id})
-        return {"access_token": token}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid OpenID response")
-"""
