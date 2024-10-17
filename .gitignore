@@ -18,12 +18,6 @@ docker-compose.override.yml
 # Mypy cache files
 .mypy_cache/
 
-# Data and models (exclude from Git)
-backend/app/ml_models/*.csv
-backend/app/ml_models/*.txt
-backend/app/ml_models/*.pkl
-backend/app/ml_models/*.cbm
-
 # Secret environment variables
 .env
 *.env.*
