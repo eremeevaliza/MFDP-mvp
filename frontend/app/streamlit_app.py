@@ -35,7 +35,7 @@ claimed_id = query_params.get("openid.claimed_id", [None])[
 
 # Steam OpenID настройки
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
-PUBLIC_ADDR = "https://8d94-2600-1700-1690-19a0-ecf5-ab5c-4702-db10.ngrok-free.app"
+PUBLIC_ADDR = "https://first-caribou-frequently.ngrok-free.app/"
 PUBLIC_OAUTH = f"{PUBLIC_ADDR}"
 
 

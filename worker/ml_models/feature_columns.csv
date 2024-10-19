@@ -1,0 +1,140 @@
+Feature Columns
+english
+developer
+publisher
+required_age
+achievements
+positive_ratings
+negative_ratings
+average_playtime
+median_playtime
+price
+genres_Action
+genres_Adventure
+genres_Animation & Modeling
+genres_Casual
+genres_Design & Illustration
+genres_Early Access
+genres_Education
+genres_Free to Play
+genres_Game Development
+genres_Gore
+genres_Indie
+genres_Massively Multiplayer
+genres_Nudity
+genres_Photo Editing
+genres_RPG
+genres_Racing
+genres_Sexual Content
+genres_Simulation
+genres_Software Training
+genres_Sports
+genres_Strategy
+genres_Utilities
+genres_Video Production
+genres_Violent
+genres_Web Publishing
+categories_Captions available
+categories_Co-op
+categories_Commentary available
+categories_Cross-Platform Multiplayer
+categories_Full controller support
+categories_In-App Purchases
+categories_Includes Source SDK
+categories_Includes level editor
+categories_Local Co-op
+categories_Local Multi-Player
+categories_MMO
+categories_Multi-player
+categories_Online Co-op
+categories_Online Multi-Player
+categories_Partial Controller Support
+categories_Shared/Split Screen
+categories_Single-player
+categories_Stats
+categories_Steam Achievements
+categories_Steam Cloud
+categories_Steam Leaderboards
+categories_Steam Trading Cards
+categories_Steam Turn Notifications
+categories_Steam Workshop
+categories_SteamVR Collectibles
+categories_VR Support
+categories_Valve Anti-Cheat enabled
+pca_emb_0
+pca_emb_1
+pca_emb_2
+pca_emb_3
+pca_emb_4
+pca_emb_5
+pca_emb_6
+pca_emb_7
+pca_emb_8
+pca_emb_9
+pca_emb_10
+pca_emb_11
+pca_emb_12
+pca_emb_13
+pca_emb_14
+pca_emb_15
+pca_emb_16
+pca_emb_17
+pca_emb_18
+pca_emb_19
+pca_emb_20
+pca_emb_21
+pca_emb_22
+pca_emb_23
+pca_emb_24
+pca_emb_25
+pca_emb_26
+pca_emb_27
+pca_emb_28
+pca_emb_29
+pca_emb_30
+pca_emb_31
+pca_emb_32
+pca_emb_33
+pca_emb_34
+pca_emb_35
+pca_emb_36
+pca_emb_37
+pca_emb_38
+pca_emb_39
+pca_emb_40
+pca_emb_41
+pca_emb_42
+pca_emb_43
+pca_emb_44
+pca_emb_45
+pca_emb_46
+pca_emb_47
+pca_emb_48
+pca_emb_49
+pca_emb_50
+pca_emb_51
+pca_emb_52
+pca_emb_53
+pca_emb_54
+pca_emb_55
+pca_emb_56
+pca_emb_57
+pca_emb_58
+pca_emb_59
+pca_emb_60
+pca_emb_61
+pca_emb_62
+pca_emb_63
+pca_emb_64
+pca_emb_65
+pca_emb_66
+pca_emb_67
+pca_emb_68
+pca_emb_69
+pca_emb_70
+pca_emb_71
+release_year
+platform_windows
+platform_mac
+platform_linux
+estimated_owners

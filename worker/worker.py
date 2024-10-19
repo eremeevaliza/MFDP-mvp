@@ -3,6 +3,7 @@ import asyncio
 from collections import defaultdict
 import json
 import os
+import random
 import aio_pika
 import httpx
 import numpy as np
@@ -28,17 +29,19 @@ class BundleRecommender:
 
         # Load CatBoost model
         self.catboost_model = CatBoostRegressor()
-        self.catboost_model.load_model("./ml_models/prices_model.cbm")
+        self.catboost_model.load_model("./ml_models/prices_model_2.cbm")
 
         # Load necessary data
-        self.df_train = pd.read_csv("./ml_models/steam_user_aggregated.csv")
+        self.df_train = pd.read_csv("./ml_models/big_df.csv")
         self.user_game_matrix = pd.read_csv(
             "./ml_models/user_game_matrix.csv", index_col=0
         )
-        self.game_features_df = pd.read_csv("./ml_models/df_for_catboost.csv")
+        self.game_features_df = pd.read_csv("./ml_models/cb_df.csv")
 
         # Load Steam IDs
         self.steam_ids = self.load_steam_ids()
+
+        self.feature_columns = pd.read_csv("./ml_models/feature_columns.csv")
 
         self.models_loaded = True
 
@@ -59,52 +62,73 @@ class BundleRecommender:
         )
 
         async def filter_free_games(recommended_games, df_train):
+            # Приведение appid к строковому типу
             df_train["appid"] = df_train["appid"].astype(str)
             recommended_games = [str(appid) for appid in recommended_games]
 
+            # Получение данных о рекомендованных играх и фильтрация дубликатов
             prices_for_recommended_games = df_train[
                 df_train["appid"].isin(recommended_games)
             ]
             prices_for_recommended_games = prices_for_recommended_games.drop_duplicates(
                 subset="appid", keep="first"
             )
+            print("prices_for_recommended_games: ", prices_for_recommended_games)
+
+            # Оставляем только платные игры
             paid_games = prices_for_recommended_games[
                 prices_for_recommended_games["price"] > 0
             ]
 
+            # Возвращаем список appid платных игр
             return paid_games["appid"].tolist()
 
         async def get_popular_games():
+            # Получение 3 самых популярных игр по времени игры
             popular_games = (
                 self.df_train.groupby("appid")["play_hours"]
                 .sum()
-                .nlargest(3)
+                .nlargest(50)
                 .index.tolist()
             )
             print(
                 f"get_bundle_for_user().get_popular_games() step 1> popular_games: {popular_games}"
             )
-            bundle_price = self.estimate_bundle_price(popular_games)
+
+            # Фильтрация бесплатных игр
+            paid_games = await filter_free_games(popular_games, self.df_train)
+            if not paid_games:
+                print("No paid games available.")
+                return {"bundle_price": 0, "games": []}
+
+            random.shuffle(paid_games)
+            # Берем первые 3 игры
+            games_for_bundle = paid_games[:3]
+
+            # Оценка стоимости бандла для платных игр
+            bundle_price = self.estimate_bundle_price(games_for_bundle)
             print(
-                f"get_bundle_for_user().get_popular_games() step 2> bundle_price: {bundle_price}"
+                f"get_bundle_for_user().get_popular_games() step 2> bundle_price: {games_for_bundle}"
             )
+
+            # Получение информации о платных играх
             popular_games_info_list = [
-                self.get_game_info_from_steam(appid) for appid in popular_games
+                self.get_game_info_from_steam(appid) for appid in games_for_bundle
             ]
             print(
                 f"get_bundle_for_user().get_popular_games() step 2.1 > popular_games_info_list: {popular_games_info_list}"
             )
+
+            # Асинхронная загрузка информации об играх
             popular_games_info = await asyncio.gather(
                 *popular_games_info_list, return_exceptions=True
             )
             print(
                 f"get_bundle_for_user().get_popular_games() step 3> popular_games_info: {popular_games_info}"
             )
+
             return {"bundle_price": bundle_price, "games": popular_games_info}
 
-        print(
-            f"get_bundle_for_user() step 2 > steam_id: {steam_id}, user_games: {user_games}"
-        )
         if not user_games:
             return await get_popular_games()
 
@@ -329,57 +353,19 @@ class BundleRecommender:
         if selected_games.empty:
             raise ValueError("No games found in the dataset")
 
-        feature_columns = [
-            "achievements",
-            "average_playtime",
-            "developer",
-            "english",
-            "median_playtime",
-            "negative_ratings",
-            "positive_ratings",
-            "price",
-            "publisher",
-            "required_age",
-            "genres_Indie",
-            "genres_Action",
-            "genres_Adventure",
-            "genres_Casual",
-            "genres_Strategy",
-            "genres_RPG",
-            "genres_Simulation",
-            "genres_Racing",
-            "genres_Sports",
-            "genres_Early Access",
-            "categories_Single-player",
-            "categories_Steam Trading Cards",
-            "categories_Steam Achievements",
-            "categories_Steam Cloud",
-            "categories_Full controller support",
-            "categories_Multi-player",
-            "categories_Steam Leaderboards",
-            "categories_Partial Controller Support",
-            "categories_Co-op",
-            "categories_Stats",
-            "release_year",
-            "platform_windows",
-            "platform_mac",
-            "platform_linux",
-            "estimated_owners",
-        ]
+        feature_columns = self.feature_columns["Feature Columns"].tolist()
 
+        # Выбираем только те столбцы, которые остались после исключения
         features = selected_games[feature_columns]
 
-        cat_features = [
-            "developer",
-            "publisher",
-            # Add other categorical features if any
-        ]
+        cat_features: list[int] = []
 
         predict_pool = Pool(data=features, cat_features=cat_features)
         predicted_prices = self.catboost_model.predict(predict_pool)
         bundle_price = sum(predicted_prices)
+
         print(f"Predicted games: {recommended_games}")
-        return bundle_price
+        return bundle_price  # Возвращаем цену бандла
 
     async def get_game_info_from_steam(self, appid: int):
         """Asynchronously fetches game information from Steam."""
@@ -430,10 +416,8 @@ class BundleRecommender:
         knn_model,
         top_n=3,
     ):
-        # Await the user games from the database
         user_games = await self.get_user_games_from_db(user_id, session)
 
-        # Check if the user_id exists in the user_game_matrix DataFrame
         if user_id not in user_game_matrix.index:
             playtime_by_appid = defaultdict(list)
 
